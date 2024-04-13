@@ -1,10 +1,11 @@
 package com.vanduong.web.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.sql.Blob;
@@ -17,18 +18,28 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+
+
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String roomType;
     private float roomPrice;
-    private boolean isBooked =false;
     @Lob
+    @JsonIgnore
     private Blob photo;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "room")
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "room")
+    @JsonManagedReference
     private List<BookedRoom> bookings;
+
+
+
+
+
+
 
     public Room(long id) {
         this.bookings = new ArrayList<>();
@@ -42,7 +53,6 @@ public class Room {
         }
         bookings.add(booking);
         booking.setRoom(this);
-        isBooked=true;
         String bookingCode= RandomStringUtils.randomAlphanumeric(10).toUpperCase();
         booking.setBookingConfirmationCode(bookingCode);
     }

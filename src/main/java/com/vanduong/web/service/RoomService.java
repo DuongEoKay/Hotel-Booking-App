@@ -55,4 +55,68 @@ public class RoomService implements IRoomService{
         }
         return null;
     }
+
+    @Override
+    public void deleteRoom(long id) {
+        Optional<Room> theRoom = roomRepository.findById(id);
+        if(theRoom.isEmpty())
+        {
+            throw new RuntimeException("Room not found");
+        }
+        try {
+            roomRepository.deleteById(id);
+        }  catch (Exception e)
+        {
+            throw new RuntimeException("Error deleting room");
+        }
+    }
+
+    @Override
+    public Room updateRoom(long id, byte[] photoBytes, String roomType, float roomPrice) {
+        Optional<Room> theRoom = roomRepository.findById(id);
+        if(theRoom.isEmpty())
+        {
+            throw new RuntimeException("Room not found");
+        }
+
+        Room room = theRoom.get();
+
+        if(roomType != null && !roomType.isEmpty())
+        {
+            room.setRoomType(roomType);
+        }
+
+
+        if(roomPrice > 0){
+            room.setRoomPrice(roomPrice);
+        }
+
+
+        if(photoBytes != null && photoBytes.length>0)
+        {
+            Blob photoBlob = null;
+            try {
+                photoBlob = new SerialBlob(photoBytes);
+            } catch (SQLException throwables) {
+                throw new RuntimeException("Error updating photo");
+            }
+            room.setPhoto(photoBlob);
+        }
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room getRoomById(long id) {
+        Optional<Room> theRoom = roomRepository.findById(id);
+        if(theRoom.isEmpty())
+        {
+            throw new RuntimeException("Room not found");
+        }
+        return theRoom.get();
+    }
+
+    @Override
+    public Room save(Room room) {
+        return roomRepository.save(room);
+    }
 }

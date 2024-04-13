@@ -1,5 +1,6 @@
 package com.vanduong.web.model;
 
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,7 +16,6 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class BookedRoom {
 
     @Id
@@ -49,8 +49,10 @@ public class BookedRoom {
     @Column(name = "booking_confirmation_code")
     private String bookingConfirmationCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
+    @JsonBackReference
     private Room room;
 
 
@@ -72,6 +74,7 @@ public class BookedRoom {
     public void setBookingConfirmationCode(String bookingConfirmationCode) {
         this.bookingConfirmationCode = bookingConfirmationCode;
     }
+
 
 
 }

@@ -35,7 +35,7 @@ public class BookingResponse {
 
     private String bookingConfirmationCode;
 
-    private Room room;
+    private RoomResponse roomResponse;
 
 
     public BookingResponse(long bookingId, LocalDate checkInDate, LocalDate checkOutDate, String bookingConfirmationCode) {
@@ -43,5 +43,13 @@ public class BookingResponse {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.bookingConfirmationCode = bookingConfirmationCode;
+    }
+
+    public BookingResponse(long id, LocalDate checkInDate, LocalDate checkOutDate, String bookingConfirmationCode, RoomResponse room) {
+        this.bookingId = id;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.bookingConfirmationCode = bookingConfirmationCode;
+        this.roomResponse = room;
     }
 }

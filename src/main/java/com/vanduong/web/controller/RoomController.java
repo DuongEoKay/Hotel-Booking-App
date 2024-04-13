@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.vanduong.web.service.IRoomService;
 
 
+import javax.sql.rowset.serial.SerialBlob;
 import javax.swing.*;
 import java.io.IOException;
 import java.sql.Blob;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-
+@CrossOrigin("http://localhost:5173")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/rooms")
@@ -43,12 +44,21 @@ public class RoomController {
     }
 
 
-    @GetMapping("/get-room/types/")
+    @GetMapping("/{id}")
+    public ResponseEntity<RoomResponse> getRoomById(@PathVariable("id") long id) {
+        Room room = roomService.getRoomById(id);
+        RoomResponse roomResponse = getRoomResponse(room);
+        return ResponseEntity.ok(roomResponse);
+    }
+
+
+
+    @GetMapping("/types/")
     public List<String> getRoomTypes() {
         return roomService.getRoomTypes();
     }
 
-    @GetMapping("/all-rooms/")
+    @GetMapping("/")
     public ResponseEntity<List<RoomResponse>> getAllRooms() throws SQLException {
         List<Room> rooms = roomService.getAllRooms();
         List<RoomResponse> roomResponses = new ArrayList<>();
@@ -69,12 +79,12 @@ public class RoomController {
     }
         private RoomResponse getRoomResponse (Room room){
             List<BookedRoom> bookings = getAllBookingByRoomId(room.getId());
-//            List<BookingResponse>  bookingInfo = bookings
-//                    .stream().map(booking -> new BookingResponse(
-//                            booking.getBookingId(),
-//                            booking.getCheckInDate(),
-//                            booking.getCheckOutDate(),
-//                            booking.getBookingConfirmationCode())).toList();
+            List<BookingResponse>  bookingInfo = bookings
+                    .stream().map(booking -> new BookingResponse(
+                            booking.getBookingId(),
+                            booking.getCheckInDate(),
+                            booking.getCheckOutDate(),
+                            booking.getBookingConfirmationCode())).toList();
             byte[] photoBytes = null;
             Blob photoBlob = room.getPhoto();
             if (photoBlob != null) {
@@ -86,14 +96,37 @@ public class RoomController {
             }
 
             return new RoomResponse(room.getId(),
-                    null,//bookingInfo,
+                    bookingInfo,
                     photoBytes,
-                    room.isBooked(),
                     room.getRoomType(),
                     room.getRoomPrice());
         }
 
     private List<BookedRoom> getAllBookingByRoomId(long id) {
         return bookingService.getAllBookingByRoomId(id);
+    }
+
+
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<RoomResponse> updateRoom(@PathVariable("id") long id,
+                                                   @RequestParam(required = false) MultipartFile photo,
+                                                   @RequestParam(required = false) String roomType,
+                                                   @RequestParam(required = false) float roomPrice) throws SQLException, IOException {
+        byte[] photoBytes = photo != null && !photo.isEmpty() ? photo.getBytes() : roomService.getRoomPhotoByRoomId(id);
+        Blob photoBlob = photoBytes != null && photoBytes.length>0 ? new SerialBlob(photoBytes) : null;
+        Room room = roomService.updateRoom(id, photoBytes, roomType, roomPrice);
+        room.setPhoto(photoBlob);
+        RoomResponse roomResponse = getRoomResponse(room);
+        return ResponseEntity.ok(roomResponse);
+    }
+
+
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteRoom(@PathVariable("id") long id) {
+        roomService.deleteRoom(id);
+        return ResponseEntity.ok("Room deleted");
     }
 }
